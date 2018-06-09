@@ -10,7 +10,7 @@ I made several changes:
 
 ## Getting Started
 firstly, you need to import this library
-`import wbdata`
+`import wbdatpy`
 
 get source
-`wbdata.get_source()`
+`wbdatapy.get_source()`
