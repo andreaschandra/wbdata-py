@@ -166,10 +166,6 @@ def fetch(query_url, args=None, cached=True):
             CACHE[query_url] = (daycount(), raw_response)
         response = json.loads(raw_response)
 
-        print("reponse")
-        print(query_url)
-        print(response)
-
         if response is None:
             raise ValueError("Got no response")
 

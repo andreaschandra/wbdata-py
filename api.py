@@ -153,12 +153,15 @@ def get_data(indicator, country="all", data_date=None, convert_date=False, panda
     :returns: list of dictionaries or pandas Series
     """
     query_url = COUNTRIES_URL
+
     try:
         c_part = parse_value_or_iterable(country)
     except TypeError:
         raise TypeError("'country' must be a string or iterable'")
+
     query_url = "/".join((query_url, c_part, "indicators", indicator))
     args = []
+
     if data_date:
         if type(data_date) is tuple:
             data_date_str = ":".join((i.strftime("%Y") for i in data_date))
@@ -194,9 +197,10 @@ def id_only_query(query_url, query_id, display):
         display = INTERACTIVE
     if query_id:
         query_url = "/".join((query_url, parse_value_or_iterable(query_id)))
+
     results = fetcher.fetch(query_url)
     if display:
-        print_ids_and_names(results)
+        return print_ids_and_names(results)
     else:
         return results
 
@@ -254,8 +258,7 @@ def get_lendingtype(type_id=None, display=None):
     return id_only_query(LTYPE_URL, type_id, display)
 
 
-def get_country(country_id=None, incomelevel=None, lendingtype=None,
-                display=None):
+def get_country(country_id=None, incomelevel=None, lendingtype=None, display=None):
     """
     Retrieve information on a country or regional aggregate.  Can specify
     either country_id, or the aggregates, but not both
@@ -275,14 +278,18 @@ def get_country(country_id=None, incomelevel=None, lendingtype=None,
         if incomelevel or lendingtype:
             raise ValueError("Can't specify country_id and aggregates")
         return id_only_query(COUNTRIES_URL, country_id, display)
+
     args = []
+
     if incomelevel:
         args.append(("incomeLevel", parse_value_or_iterable(incomelevel)))
     if lendingtype:
         args.append(("lendingType", parse_value_or_iterable(lendingtype)))
+
     results = fetcher.fetch(COUNTRIES_URL, args)
+
     if display:
-        print_ids_and_names(results)
+        return print_ids_and_names(results)
     else:
         return results
 
@@ -320,7 +327,7 @@ def get_indicator(indicator=None, source=None, topic=None, display=None):
         query_url = INDICATOR_URL
     results = fetcher.fetch(query_url)
     if display:
-        print_ids_and_names(results)
+        return print_ids_and_names(results)
     else:
         return results
 
@@ -345,7 +352,7 @@ def search_indicators(query, source=None, topic=None, display=None):
     lower = query.lower()
     matched = [i for i in indicators if lower in i["name"].lower()]
     if display:
-        print_ids_and_names(matched)
+        return print_ids_and_names(matched)
     else:
         return matched
 
@@ -369,7 +376,7 @@ def search_countries(query, incomelevel=None, lendingtype=None, display=None):
     lower = query.lower()
     matched = [i for i in countries if lower in i["name"].lower()]
     if display:
-        print_ids_and_names(matched)
+        return print_ids_and_names(matched)
     else:
         return matched
 
@@ -381,18 +388,24 @@ def print_ids_and_names(objs):
 
     :objs: a list of dictionary objects as returned by wbdata
     """
+    data = {}
+
     try:
         max_length = str(max((len(i['id']) for i in objs)))
     except ValueError:
         return
+
     for i in objs:
         try:
             templ = "{id:" + max_length + "}\t{name}"
-            print(templ.format(**i))
+            # print(templ.format(**i))
+            data[i["id"]] = i["name"]
         except KeyError:
             templ = "{id:" + max_length + "}\t{value}"
-            print(templ.format(**i))
+            data[i["id"]] = i["value"]
+            # print(templ.format(**i))
 
+    return data
 
 @uses_pandas
 def get_dataframe(indicators, country="all", data_date=None, convert_date=False, keep_levels=False):
