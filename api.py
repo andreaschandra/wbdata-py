@@ -168,9 +168,12 @@ def get_data(indicator, country="all", data_date=None, convert_date=False, panda
             args.append(("date", data_date_str))
         else:
             args.append(("date", data_date.strftime("%Y")))
+
     data = fetcher.fetch(query_url, args)
+
     if convert_date:
         data = convert_dates_to_datetime(data)
+
     if pandas:
         df = convert_to_dataframe(data, column_name)
         if not keep_levels and len(df["country"].unique()) == 1:
@@ -180,6 +183,7 @@ def get_data(indicator, country="all", data_date=None, convert_date=False, panda
         else:
             df = df.set_index(["country", "date"])
         return df[column_name]
+
     return data
 
 
@@ -422,7 +426,7 @@ def get_dataframe(indicators, country="all", data_date=None, convert_date=False,
     :convert_date: if True, convert date field to a datetime.datetime object.
     :keep_levels: if True and pandas is True, don't reduce the number of
         index levels returned if only getting one date or country
-    :returns: a pandas dataframe
+    :returns: a Pandas dataframe
     """
     to_df = {indicators[i]: get_data(i, country, data_date, convert_date,
                                      pandas=True, keep_levels=keep_levels)
@@ -451,22 +455,28 @@ def get_panel(indicators, country="all", data_date=None, convert_date=False, ite
                        keep_levels=True)
     if items == major_axis:
         raise ValueError("Cannot have the same value for items and major_axis")
+
     if items not in ("indicators", "countries", "dates"):
         raise ValueError("Bad value for items")
+
     if major_axis not in ("indicators", "countries", "dates"):
         raise ValueError("Bad value for major_axis")
+
     if items == "indicators":
         if major_axis == "dates":
             return pd.Panel({i: df[i].unstack(level=0) for i in df.columns})
         return pd.Panel({i: df[i].unstack() for i in df})
+
     if items == "countries":
         if major_axis == "dates":
             return pd.Panel({i: df.xs(i, level=0) for i in
                              sorted(set(df.index.get_level_values(0)))})
         return pd.Panel({i: df.xs(i, level=0).transpose() for i in
                          sorted(set(df.index.get_level_values(0)))})
+
     if major_axis == "countries":
         return pd.Panel({i: df.xs(i, level=1) for i in
                          sorted(set(df.index.get_level_values(1)))})
+
     return pd.Panel({i: df.xs(i, level=1).transpose() for i in
                      sorted(set(df.index.get_level_values(1)))})

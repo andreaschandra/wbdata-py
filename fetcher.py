@@ -134,7 +134,7 @@ def fetch_url(url):
         except URLError:
             continue
     if response is None:
-        raise ValueError
+        return response
     try:
         return str(response, encoding="ascii", errors="replace")
     except TypeError:
@@ -164,15 +164,14 @@ def fetch(query_url, args=None, cached=True):
         else:
             raw_response = fetch_url(query_url)
             CACHE[query_url] = (daycount(), raw_response)
-        response = json.loads(raw_response)
-
-        if response is None:
-            raise ValueError("Got no response")
-
         try:
-            results.extend(response[1])
+            response = json.loads(raw_response)
         except:
-            print(response[0]["message"][0]["key"])
+            break
+
+        if response[1] is not None:
+            results.extend(response[1])
+        else:
             break
 
         this_page = response[0]['page']
